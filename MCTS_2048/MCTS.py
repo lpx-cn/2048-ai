@@ -77,9 +77,9 @@ class MCTS():
     def expand_leaf(self, currentNode):
 
         for i in range(4):
-            temp = copy.deepcopy(currentNode) 
-            temp.state.action(KEY[i])
-            child = Node(temp.state, currentNode, action = KEY[i])
+            temp = copy.deepcopy(currentNode.state) 
+            temp.action(KEY[i])
+            child = Node(temp, currentNode, action = KEY[i])
 
             if child.state.matrix == currentNode.state.matrix:
                 child.is_dead = True

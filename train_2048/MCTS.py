@@ -80,9 +80,9 @@ class MCTS():
         p,s = prediction(currentNode.state.matrix, model)
 
         for i in range(4):
-            temp = copy.deepcopy(currentNode) 
-            temp.state.action(KEY[i])
-            child = Node(temp.state, currentNode, p[0][i], action = KEY[i])
+            temp = copy.deepcopy(currentNode.state) 
+            temp.action(KEY[i])
+            child = Node(temp, currentNode, p[0][i], action = KEY[i])
 
             if child.state.matrix == currentNode.state.matrix:
                 child.is_dead = True
@@ -93,7 +93,8 @@ class MCTS():
             child.Q = child.S # Revise: avoid the Q=0
             currentNode.add_child(child)
             self.add_to_tree(child)
-        
+ 
+               
 
     def back_fill(self, currentNode):
         while currentNode != None :
@@ -136,6 +137,7 @@ def mcts_process(gamegrid, model, tau=1):
     mct = MCTS(root_mct, CPUCT)
 
 
+    print("*"*50)
     for i in range(UPDATE_TIMES):
         # print("*"*25,"step: %d"% i, "*"*25)
         is_update = mct.update_tree(model)
