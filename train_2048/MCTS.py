@@ -3,7 +3,7 @@ import numpy as np
 import constants 
 from Resnet_funs import prediction 
 import copy
-from constants import UPDATE_TIMES, EPSILON, KEY, ALPHA, CPUCT
+from constants import UPDATE_TIMES, EPSILON, KEY, ALPHA, CPUCT,MAXVALUE_WEIGHT
 
 class Node():
 
@@ -17,6 +17,7 @@ class Node():
         self.S = 0
         self.Q = 0
         self.P = prior
+        self.U = 0
     
     def is_leaf(self):
         if len(self.childs) > 0:
@@ -30,7 +31,7 @@ class Node():
 
 class MCTS():
 
-    def __init__(self, root, cpuct):
+    def __init__(self, root, cpuct = CPUCT):
         self.root = root
         self.tree = [] 
         self.cpuct = cpuct
@@ -54,9 +55,10 @@ class MCTS():
 
             is_first = True
             for idx, child in enumerate(currentNode.childs):
-                U = self.cpuct * \
+                child.U = self.cpuct * \
                     ((1-epsilon) * child.P + epsilon * nu[idx] )  * \
-                    np.sqrt(Nb) / (4 + child.N)
+                    np.sqrt(Nb) / (child.N)
+                U = child.U
                 Q = child.Q 
                 # print("Q: %.2f, U: %.2f" %(Q,U))
                 if not(child.state.is_over) and not(child.is_dead):
@@ -85,26 +87,44 @@ class MCTS():
             if child.state.matrix == currentNode.state.matrix:
                 child.is_dead = True
 
-            child.S = child.state.max_value
+            child.N = 1
+            child.S = (1-MAXVALUE_WEIGHT)*child.state.sum_value+\
+                    MAXVALUE_WEIGHT*child.state.max_value
+            child.Q = child.S # Revise: avoid the Q=0
             currentNode.add_child(child)
             self.add_to_tree(child)
         
 
     def back_fill(self, currentNode):
         while currentNode != None :
-            currentNode.N += 4
             
             sum_scorce = 0
+            sum_N = 0
             for child in currentNode.childs:
+                sum_N += child.N
                 sum_scorce += child.S
+            currentNode.N = sum_N
             currentNode.S = sum_scorce 
+            # print("s: %.2f, n:%.2f "%(currentNode.S, currentNode.N))
             currentNode.Q = currentNode.S / currentNode.N
             currentNode = currentNode.father
 
     def add_to_tree(self, node):
         self.tree.append(node)
 
+    def print_treeQU(self):
+        father = self.root
+        if not(father.is_leaf()):
+            QU = []
+            for child in father.childs:
+                QU.append([int(child.Q),(child.U)])
+            print(QU)
 
+            for child in father.childs:
+                child_tree = MCTS(child)
+                child_tree.print_treeQU()
+
+        
 
 
 def mcts_process(gamegrid, model, tau=1):
@@ -119,22 +139,25 @@ def mcts_process(gamegrid, model, tau=1):
     for i in range(UPDATE_TIMES):
         # print("*"*25,"step: %d"% i, "*"*25)
         is_update = mct.update_tree(model)
-
         if not(is_update):
             break
+    # mct.print_treeQU()
 
     feature = mct.root.state.matrix
     label = {}
     label["P"] = []
     label["S"] = [mct.root.Q]
 
-    for child in mct.root.childs:
-        p = np.power(child.N, 1/tau) 
-        label["P"].append(p)
 
-    # If the gamegrid come to last step, all childs' N is 0.
+
+    # If the gamegrid come to last step, all childs' N is 1.
     # the status is "is_over" or "is_dead".
-    if sum(label["P"])==0:
+    is_last = True
+    for child in mct.root.childs:
+        if child.N!=1:
+            is_last = False
+
+    if is_last:
         label["P"] = []
         for child in mct.root.childs:
             if child.state.is_over:
@@ -146,10 +169,14 @@ def mcts_process(gamegrid, model, tau=1):
             label["P"].append(p)
         label["P"]=[label["P"]/sum(label["P"])]
     else:
+        for child in mct.root.childs:
+            p = np.power(child.N, 1/tau) 
+            label["P"].append(p)
         label["P"]=[label["P"]/sum(label["P"])]
 
     NN_data["feature"] = [feature] 
     NN_data["label"] = label
+    # print(label["P"])
 
     event = np.argmax(label["P"])
     event = KEY[event]
@@ -157,4 +184,3 @@ def mcts_process(gamegrid, model, tau=1):
         raise Exception("The mcts isn't updated!")
 
     return NN_data, event
-

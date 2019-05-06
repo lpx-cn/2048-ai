@@ -232,7 +232,7 @@ class ResnetBuilder(object):
         dense_v1 = Dense(units = 64, activation = "relu")(flatten1)
         dense_v2 = Dense (units = 64, activation = "relu")(dense_v1)
 
-        value_output = Dense(units=num_outputs[1], kernel_initializer="he_normal",
+        value_output = Dense(units=num_outputs[1], 
                       activation="relu", name="score")(dense_v2)
 
         model = Model(inputs=input, outputs=[policy_output, value_output])

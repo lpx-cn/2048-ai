@@ -1,4 +1,5 @@
 import random
+import numpy as np
 import logic
 import constants as c
 
@@ -9,6 +10,7 @@ class GameGrid():
         self.init_matrix()
         self.is_over = False
         self.max_value = 2
+        self.sum_value = 4
         self.is_win = False
         self.step = 0
 
@@ -40,6 +42,7 @@ class GameGrid():
                     self.is_over = True
         self.step =self.step+1
         self.max_value = max(max(row) for row in self.matrix)
+        self.sum_value = sum(sum(np.array(self.matrix)))
         return self 
 
     def init_matrix(self):

@@ -26,14 +26,14 @@ def training(train_tims = TRAIN_TIMES):
 
         i=0
         while(1):
+            i+=1
+            print("step: ", i)
             NN_data_temp, event= MCTS.mcts_process(gamegrid, model)
-            if i == 0 :
+            if i == 1 :
                 NN_data = NN_data_temp
             else:
                 data_merge(NN_data, NN_data_temp)
             gamegrid.action(event)
-            print("step: ", i)
-            i+=1
             for l in gamegrid.matrix:
                 print(l, event)
             if gamegrid.is_over:
@@ -70,7 +70,7 @@ def playing(model):
 if __name__ == '__main__':
     training()
 
-    score = []
+    score = [2]
     model = obtain_model()
     for game_times in range(PLAY_TIMES):
         print("-"*20,game_times,"-"*20)
@@ -79,4 +79,4 @@ if __name__ == '__main__':
         score.append(score_tem)
 
     print(score)
-    print("The score can be %d" % max(score))
+    print("Play %d times, the score can be %d" % (PLAY_TIMES,max(score)))
