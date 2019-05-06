@@ -1,11 +1,11 @@
 # Parameters in main.py
-PLAY_TIMES =  2 # The game times for testing the NN.
+PLAY_TIMES =  100 # The game times for testing the NN.
 KEY= ["'w'", "'s'", "'a'", "'d'"] # The action 
 
 
 # Parameters in MCTS.py
 CPUCT = 20 # The upper confidence bound's weight. Q+U=score/N+CPUCT*SUM(N)/N
-UPDATE_TIMES = 4# Expand * times before deciding the action
+UPDATE_TIMES = 32 # Expand * times before deciding the action
 MAXVALUE_WEIGHT = 0.8 # The weight of max_value in score (max_value + sum_value)
 EPSILON = 0.2  # The pretection's unbelievable probability
 KEY = ["'w'","'s'","'a'","'d'"]
