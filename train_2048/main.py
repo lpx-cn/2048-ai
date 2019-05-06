@@ -52,29 +52,31 @@ def training(train_tims = TRAIN_TIMES):
     print("The score can be %d" % max(score))
 
 def playing(model):
-    score = []
-
-    for game_times in range(PLAY_TIMES):
-        print("-"*20,game_times,"-"*20)
-        gamegrid = puzzle.GameGrid()
-        NN_data = {}
-
-        i=0
-        while(1):
-            NN_data_temp, event= MCTS.mcts_process(gamegrid, model)
-            gamegrid.action(event)
-            print("step: ", i)
-            i+=1
-            for l in gamegrid.matrix:
-                print(l, event)
-            if gamegrid.is_over:
-                score_tem = gamegrid.max_value
-                score.append(score_tem)
-                break
-        print("the score is: ", score_tem)
-    print(score)
-    print("The score can be %d" % max(score))
+    gamegrid = puzzle.GameGrid()
+    i=0
+    while(1):
+        NN_data_temp, event= MCTS.mcts_process(gamegrid, model)
+        gamegrid.action(event)
+        print("step: ", i)
+        i+=1
+        for l in gamegrid.matrix:
+            print(l, event)
+        if gamegrid.is_over:
+            score_tem = gamegrid.max_value
+            break
+    return score_tem
 
 
 if __name__ == '__main__':
     training()
+
+    score = []
+    model = obtain_model()
+    for game_times in range(PLAY_TIMES):
+        print("-"*20,game_times,"-"*20)
+        score_temp = playing(model)
+        print("the score is: ", score_tem)
+        score.append(score_tem)
+
+    print(score)
+    print("The score can be %d" % max(score))
