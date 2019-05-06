@@ -74,13 +74,15 @@ class MCTS():
                 return False
         self.expand_leaf(currentNode,model)
         self.back_fill(currentNode)
+
         return True
 
     def expand_leaf(self, currentNode, model):
         p,s = prediction(currentNode.state.matrix, model)
 
         for i in range(4):
-            temp = copy.deepcopy(currentNode.state) 
+            # temp = copy.deepcopy(currentNode.state) 
+            temp = copy.copy(currentNode.state) 
             temp.action(KEY[i])
             child = Node(temp, currentNode, p[0][i], action = KEY[i])
 

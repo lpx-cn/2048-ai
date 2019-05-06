@@ -77,7 +77,7 @@ class MCTS():
     def expand_leaf(self, currentNode):
 
         for i in range(4):
-            temp = copy.deepcopy(currentNode.state) 
+            temp = copy.copy(currentNode.state) 
             temp.action(KEY[i])
             child = Node(temp, currentNode, action = KEY[i])
 
