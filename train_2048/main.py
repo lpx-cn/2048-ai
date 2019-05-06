@@ -74,7 +74,7 @@ if __name__ == '__main__':
     model = obtain_model()
     for game_times in range(PLAY_TIMES):
         print("-"*20,game_times,"-"*20)
-        score_temp = playing(model)
+        score_tem = playing(model)
         print("the score is: ", score_tem)
         score.append(score_tem)
 
