@@ -3,7 +3,8 @@ import numpy as np
 import constants 
 from Resnet_funs import prediction 
 import copy
-from constants import UPDATE_TIMES, EPSILON, KEY, ALPHA, CPUCT,MAXVALUE_WEIGHT
+from constants import (UPDATE_TIMES, EPSILON, KEY, 
+        ALPHA, CPUCT,MAXVALUE_WEIGHT, MAX_SCORE)
 
 class Node():
 
@@ -90,8 +91,9 @@ class MCTS():
                 child.is_dead = True
 
             child.N = 1
-            child.S = (1-MAXVALUE_WEIGHT)*child.state.sum_value+\
+            S_temp = (1-MAXVALUE_WEIGHT)*child.state.sum_value+\
                     MAXVALUE_WEIGHT*child.state.max_value
+            child.S = S_temp / MAX_SCORE 
             child.Q = child.S # Revise: avoid the Q=0
             currentNode.add_child(child)
             self.add_to_tree(child)
@@ -126,6 +128,8 @@ class MCTS():
             for child in father.childs:
                 child_tree = MCTS(child)
                 child_tree.print_treeQU()
+        else:
+            print(" "*10,"-"*10,"It's a leaf","-"*10," "*10,)
 
         
 
@@ -145,7 +149,7 @@ def mcts_process(gamegrid, model, tau=1):
         is_update = mct.update_tree(model)
         if not(is_update):
             break
-    # mct.print_treeQU()
+    mct.print_treeQU()
 
     feature = mct.root.state.matrix
     label = {}
