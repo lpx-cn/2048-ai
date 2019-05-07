@@ -56,11 +56,11 @@ class MCTS():
 
             is_first = True
             for idx, child in enumerate(currentNode.childs):
-                child.U = self.cpuct * \
-                    ((1-epsilon) * child.P + epsilon * nu[idx] )  * \
-                    np.sqrt(Nb) / (child.N)
+                # Important!
+                child.U =  ((1-epsilon) * child.P + epsilon * nu[idx] )  * \
+                    (Nb) / (child.N)
                 U = child.U
-                Q = child.Q 
+                Q = self.cpuct * child.Q 
                 # print("Q: %.2f, U: %.2f" %(Q,U))
                 if not(child.state.is_over) and not(child.is_dead):
                     if is_first:
@@ -122,14 +122,16 @@ class MCTS():
         if not(father.is_leaf()):
             QU = []
             for child in father.childs:
-                QU.append([int(child.Q),(child.U)])
-            print(QU)
+                QU.append([(child.Q),(child.U), child.N])
+                print([(child.Q),(child.U), child.N])
+            print("-"*20)
+            # print(QU)
 
             for child in father.childs:
                 child_tree = MCTS(child)
                 child_tree.print_treeQU()
-        else:
-            print(" "*10,"-"*10,"It's a leaf","-"*10," "*10,)
+        # else:
+            # print(" "*10,"-"*10,"It's a leaf","-"*10," "*10,)
 
         
 
@@ -142,14 +144,37 @@ def mcts_process(gamegrid, model, tau=1):
     root_mct = Node(state)
     mct = MCTS(root_mct, CPUCT)
 
-
-    print("*"*50)
+    # print("*"*50)
+    q = []
+    u = []
+    deltaQ = []
+    deltaU = []
+    N_prior = []
     for i in range(UPDATE_TIMES):
-        # print("*"*25,"step: %d"% i, "*"*25)
+        print("-"*5,"step: %d"% i, "-"*5)
         is_update = mct.update_tree(model)
+        q.append([CPUCT*mct.root.childs[0].Q,CPUCT*mct.root.childs[1].Q,CPUCT*mct.root.childs[2].Q,CPUCT*mct.root.childs[3].Q])
+        u.append([mct.root.childs[0].U,mct.root.childs[1].U,mct.root.childs[2].U,mct.root.childs[3].U])
+        N_prior.append([mct.root.N/mct.root.childs[0].N,mct.root.N/mct.root.childs[1].N,mct.root.N/mct.root.childs[2].N,mct.root.N/mct.root.childs[3].N])
+        if i != 0 :
+            # deltaQ.append(q[i]-q[i-1])
+            deltaQ.append(np.array(q[i])-np.array(q[i-1]))
+            deltaU.append(np.array(u[i])-np.array(u[i-1]))
+            print("Q: ",q[i-1])
+            print("deltaQ:",deltaQ[i-1])
+            print("deltaU:",deltaU[i-1])
+            print("U: ",u[i-1])
+            print("N_prior: ", N_prior[i-1])
+
         if not(is_update):
             break
-    mct.print_treeQU()
+    # mct.print_treeQU()
+    # print("delta Q all: ",q[-1]-q[0], "expand times :", len(q))
+    # print("delta U all: ",u[-1]-u[0], "expand times :", len(u))
+    # print("delta Q: mean-%f, max-%f(%d), min-%f(%d)."
+            # %(np.mean(deltaQ),np.max(deltaQ),np.argmax(deltaQ),np.min(deltaQ),np.argmin(deltaQ)))
+    # print("delta U: mean-%f, max-%f(%d), min-%f(%d)."
+            # %(np.mean(deltaU),np.max(deltaU),np.argmax(deltaU),np.min(deltaU),np.argmin(deltaU)))
 
     feature = mct.root.state.matrix
     label = {}
