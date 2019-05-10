@@ -1,19 +1,18 @@
 # Parameters in main.py
-PLAY_TIMES =  20 # The game times for testing the NN.
+PLAY_TIMES =  10 # The game times for testing the NN.
 KEY= ["'w'", "'s'", "'a'", "'d'"] # The action 
 
 
 # Parameters in MCTS.py
-CPUCT = 0.5 # The upper confidence bound's weight. Q+U=score/N+CPUCT*SUM(N)/N
-UPDATE_TIMES = 1024 # Expand * times before deciding the action
+CPUCT = 4096 # The Q's weight. Q+U=CPUCT*score/child.N+SUM(N)/N
+CPUCT_denominator = 4 # The Q's weight. Q+U=root.N/CPUCT_d*score/child.N+SUM(N)/N
+UPDATE_TIMES = 4096 # Expand * times before deciding the action
 MAX_SCORE = 2048 # The target score used for normalization
-MAXVALUE_WEIGHT = 0.8 # The weight of max_value in score (max_value + sum_value)
-EPSILON = 0.2  # The pretection's unbelievable probability
+MAXVALUE_WEIGHT = 0.5 # The weight of max_value in score (max_value + sum_value)
+EPSILON = 0.1  # The pretection's unbelievable probability
 KEY = ["'w'","'s'","'a'","'d'"]
 ALPHA = 0.8 # dirichlet distribution parameters
 
-# Parameters in Resnet_funs.py
-MODEL_PATH = "./Model_Resnet/" # The path to store the old/new Resnet model. And model.png, tensorboard, log(for loss)
 
 
 # Parameters in logic.py
