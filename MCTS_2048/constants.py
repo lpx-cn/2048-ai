@@ -8,7 +8,7 @@ CPUCT = 4096 # The Q's weight. Q+U=CPUCT*score/child.N+SUM(N)/N
 CPUCT_denominator = 4 # The Q's weight. Q+U=root.N/CPUCT_d*score/child.N+SUM(N)/N
 UPDATE_TIMES = 4096 # Expand * times before deciding the action
 MAX_SCORE = 2048 # The target score used for normalization
-MAXVALUE_WEIGHT = 0.5 # The weight of max_value in score (max_value + sum_value)
+MAXVALUE_WEIGHT = 0.8 # The weight of max_value in score (max_value + sum_value)
 EPSILON = 0.1  # The pretection's unbelievable probability
 KEY = ["'w'","'s'","'a'","'d'"]
 ALPHA = 0.8 # dirichlet distribution parameters

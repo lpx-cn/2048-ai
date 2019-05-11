@@ -2,7 +2,8 @@ import time
 import numpy as np
 import constants 
 import copy
-from constants import UPDATE_TIMES, EPSILON, KEY, ALPHA, CPUCT,MAXVALUE_WEIGHT
+from constants import (UPDATE_TIMES, EPSILON, KEY, 
+        ALPHA, CPUCT,MAXVALUE_WEIGHT, MAX_SCORE, CPUCT_denominator)
 
 class Node():
 
@@ -16,6 +17,7 @@ class Node():
         self.S = 0
         self.Q = 0
         self.U = 0
+        self.P = 1/4
     
     def is_leaf(self):
         if len(self.childs) > 0:
@@ -41,6 +43,10 @@ class MCTS():
     def update_tree(self):
         currentNode = self.root
         value = 0
+        q=0
+        u=0
+        N_prior = 0
+        p = 0
         while not currentNode.is_leaf():
             if currentNode == self.root:
                 epsilon = EPSILON
@@ -53,11 +59,10 @@ class MCTS():
 
             is_first = True
             for idx, child in enumerate(currentNode.childs):
-                child.U = self.cpuct * \
-                    ((1-epsilon)  + epsilon * nu[idx] )  * \
-                    np.sqrt(Nb) / (child.N)
+                child.U = ((1-epsilon)*1/4  + epsilon * nu[idx] )  * \
+                    (Nb) / (child.N)
                 U = child.U
-                Q = child.Q 
+                Q = self.cpuct * child.Q 
                 # print("Q: %.2f, U: %.2f" %(Q,U))
                 if not(child.state.is_over) and not(child.is_dead):
                     if is_first:
@@ -68,11 +73,16 @@ class MCTS():
                         maxQU = Q + U
                         simulation_child = child 
             currentNode = simulation_child
+            if not self.root.is_leaf():
+                p=np.array([self.root.childs[0].P,self.root.childs[1].P,self.root.childs[2].P,self.root.childs[3].P])
+                q=np.array([self.cpuct*self.root.childs[0].Q,self.cpuct*self.root.childs[1].Q,self.cpuct*self.root.childs[2].Q,self.cpuct*self.root.childs[3].Q])
+                u=np.array([self.root.childs[0].U,self.root.childs[1].U,self.root.childs[2].U,self.root.childs[3].U])
+                N_prior=np.array([self.root.N/self.root.childs[0].N,self.root.N/self.root.childs[1].N,self.root.N/self.root.childs[2].N,self.root.N/self.root.childs[3].N])
             if currentNode == None:
-                return False
+                return False, q,u,N_prior,p
         self.expand_leaf(currentNode)
         self.back_fill(currentNode)
-        return True
+        return True, q,u,N_prior,p
 
     def expand_leaf(self, currentNode):
 
@@ -80,17 +90,16 @@ class MCTS():
             temp = copy.copy(currentNode.state) 
             temp.action(KEY[i])
             child = Node(temp, currentNode, action = KEY[i])
-
-            if child.state.matrix == currentNode.state.matrix:
-                child.is_dead = True
-
             child.N = 1
-            S.temp = (1-MAXVALUE_WEIGHT)*child.state.sum_value+\
+            S_temp = (1-MAXVALUE_WEIGHT)*child.state.sum_value+\
                     MAXVALUE_WEIGHT*child.state.max_value
-            child.S = S.temp / MAX_SCORE 
+            child.S = S_temp / MAX_SCORE 
             child.Q = child.S # Revise: avoid the Q=0
             currentNode.add_child(child)
             self.add_to_tree(child)
+            if (child.state.matrix == currentNode.state.matrix)or(child.state.is_over):
+                child.is_dead = True
+                child.S = -child.S
         
 
     def back_fill(self, currentNode):
@@ -132,13 +141,38 @@ def mcts_process(gamegrid, tau = 1):
     root_mct = Node(state)
     mct = MCTS(root_mct, CPUCT)
 
+    # print("*"*50)
+    q = []
+    u = []
+    p = []
+    deltaQ = []
+    deltaU = []
+    N_prior = []
 
     for i in range(UPDATE_TIMES):
         # print("*"*25,"step: %d"% i, "*"*25)
-        is_update = mct.update_tree()
+        mct.cpuct = mct.root.N/CPUCT_denominator
+        is_update,q_,u_,n_,p_ = mct.update_tree()
+        q.append(q_)
+        u.append(u_)
+        N_prior.append(n_)
+        p.append(p_)
+        if i != 0 :
+            deltaQ.append(np.array(q[i])-np.array(q[i-1]))
+            deltaU.append(np.array(u[i])-np.array(u[i-1]))
+            print("Q: ",q[i-1])
+            print("deltaQ:",deltaQ[i-1])
+            print("deltaU:",deltaU[i-1])
+            print("U: ",u[i-1])
+            print("N_prior: ", N_prior[i-1])
+            print("p: ", p[i-1])
+            print("cpuct: ",mct.cpuct)
+            
         if not(is_update):
+            print("the update times is :", i)
             break
     # mct.print_treeQU()
+    
 
     label = {}
     label["P"] = []
