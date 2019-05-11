@@ -230,17 +230,17 @@ class ResnetBuilder(object):
                                  strides=(1, 1))(block)
         flatten1 = Flatten()(pool2)
         dense_v1 = Dense(units = 64, activation = "relu")(flatten1)
-        dense_v2 = Dense (units = 64, activation = "relu")(dense_v1)
+        # dense_v2 = Dense (units = 64, activation = "relu")(dense_v1)
 
         value_output = Dense(units=num_outputs[1], 
-                      activation="relu", name="score")(dense_v2)
+                      activation="relu", name="score")(dense_v1)
 
         model = Model(inputs=input, outputs=[policy_output, value_output])
         return model
 
     @staticmethod
     def build_resnet_4(input_shape, num_outputs):
-        return ResnetBuilder.build(input_shape, num_outputs, basic_block, [2])
+        return ResnetBuilder.build(input_shape, num_outputs, basic_block, [1])
 
     @staticmethod
     def build_resnet_18(input_shape, num_outputs):

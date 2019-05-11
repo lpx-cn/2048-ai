@@ -12,12 +12,12 @@ def data_merge(N,n):
     N["label"]["P"] += n["label"]["P"]
     N["label"]["S"] += n["label"]["S"]
 
-def training(train_tims = TRAIN_TIMES):
+def training(training_times = TRAIN_TIMES):
     score = []
     if NETWORK_INIT: 
         train_init(POLICY_LOSS_WEIGHT)
 
-    for game_times in range(train_tims):
+    for game_times in range(training_times):
         gamegrid = puzzle.GameGrid()
         train_times = 0
         NN_data = {}
@@ -34,20 +34,22 @@ def training(train_tims = TRAIN_TIMES):
             else:
                 data_merge(NN_data, NN_data_temp)
             gamegrid.action(event)
-            # for l in gamegrid.matrix:
-                # print(l, event)
+            for l in gamegrid.matrix:
+                print(l, event)
             if gamegrid.is_over:
                 score_tem = gamegrid.max_value
                 score.append(score_tem)
                 if score_tem >= max(score):
                     train_times = int(score_tem/max(score))
-                train_times *= int(EPOCHs) 
+                else:
+                    train_times = 1/4
+                train_times = int(train_times * EPOCHs)
                 break
         # if is_stable(score):
             # print("The score can be %d" % max(score))
             # break
         train_step(NN_data, train_times)
-        print("the %dth game score is: %d" (game_time, score_tem))
+        print("the %dth game score is: %d" %(game_times, score_tem))
     print(score)
     print("The score can be %d" % max(score))
 
