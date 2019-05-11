@@ -59,7 +59,7 @@ def add_two(mat):
 def game_state(mat):
     for i in range(len(mat)):
         for j in range(len(mat[0])):
-            if mat[i][j] == 2048:
+            if mat[i][j] == 65536:
                 return 'win'
     for i in range(len(mat)-1):
         # intentionally reduced to check the row on the right and below
