@@ -13,6 +13,7 @@ class GameGrid():
         self.sum_value = 4
         self.is_win = False
         self.step = 0
+        self.quadratic_sum=8
 
 
         self.commands = {c.KEY_UP: logic.up, c.KEY_DOWN: logic.down,
@@ -43,6 +44,8 @@ class GameGrid():
         self.step =self.step+1
         self.max_value = max(max(row) for row in self.matrix)
         self.sum_value = sum(sum(np.array(self.matrix)))
+        # matrix's Frobenius value
+        self.sum_value = np.square(np.linalg.norm(self.matrix)) 
         return self 
 
     def init_matrix(self):

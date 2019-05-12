@@ -7,6 +7,7 @@ cp ./constants.py ./test_output/$datestr/
 
 # Write the comment file.
 echo -n "Please input the comment:"
+stty erase '^H'
 read comment
 echo $comment > ./test_output/$datestr/comment.txt
 
@@ -15,10 +16,12 @@ python -u ./main.py |tee ./test_output/$datestr/result.log
 
 # Write the summary file
 echo -n "It'over! Is there thoughts?->"
+stty erase '^H'
 read thoughts
 echo $thoughts > ./test_output/$datestr/summary.txt
 
 # Rename the result.log 
 echo -n "Rename the result:"
+stty erase '^H'
 read result_name
 mv ./test_output/$datestr/result.log ./test_output/$datestr/$result_name.log
