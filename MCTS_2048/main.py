@@ -16,6 +16,7 @@ def playing():
         if gamegrid.is_over:
             score_tem = gamegrid.max_value
             break
+    
     return score_tem
 
 

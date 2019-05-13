@@ -4,6 +4,8 @@ import constants
 import copy
 from constants import (UPDATE_TIMES, EPSILON, KEY, 
         ALPHA, CPUCT)
+# import gc
+import objgraph 
 
 class Node():
 
@@ -164,7 +166,7 @@ def mcts_process(gamegrid, tau = 1):
 def mcts_process_N(gamegrid, tau = 1, N =10):
 
     N_final = []
-    for i in range(N):
+    for n in range(N):
 
         event = None
 
@@ -174,6 +176,7 @@ def mcts_process_N(gamegrid, tau = 1, N =10):
 
         for i in range(UPDATE_TIMES):
             is_update = mct.update_tree()
+            objgraph.show_most_common_types(5)
 
         label = {}
         label["P"] = []
@@ -203,6 +206,7 @@ def mcts_process_N(gamegrid, tau = 1, N =10):
                 label["P"].append(p)
             label["P"]=[label["P"]/sum(label["P"])]
         N_final.append(label["P"])
+        # objgraph.show_backrefs(objgraph.by_type('list')[0], max_depth = 10, filename = 'obj'+str(n)+'.dot')
     N_final = np.sum(N_final,0)
     event = np.argmax(N_final)
     event = KEY[event]
