@@ -2,6 +2,8 @@ from show_puzzle import GameGrid
 import random
 import time
 from show_constants import Mode, key_list
+import os
+import shutil
 
 
 
@@ -25,6 +27,9 @@ def AI_player():
     pass
 
 def MTCS_player():
+    copy_files("MCTS.py")
+    copy_files("constants.py")
+    copy_files("puzzle.py")
     import MCTS 
 
     value= []
@@ -32,7 +37,7 @@ def MTCS_player():
         gamegrid = GameGrid()
         while(gamegrid.is_over == False):
             # time.sleep(1)
-            event = MCTS.mcts_process(gamegrid)
+            event = MCTS.mcts_process(gamegrid.matrix)
             gamegrid.action(event)
             gamegrid.update_grid_cells()
             print(gamegrid.matrix)
@@ -42,6 +47,12 @@ def MTCS_player():
         gamegrid.windows.destroy()
     print("*"*50)
     print("the max value is ", max(value))
+
+def copy_files(files):
+    Index = os.path.exists(files)
+    if Index:
+        os.remove(files)
+    shutil.copy("../MCTS_2048/"+files, "./")
 
 if __name__ == '__main__':
     Mode = 'MTCS'

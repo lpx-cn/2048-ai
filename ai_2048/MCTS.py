@@ -4,11 +4,30 @@ import constants
 import copy
 from constants import (UPDATE_TIMES, EPSILON, KEY, 
         ALPHA, CPUCT,MAXVALUE_WEIGHT, MAX_SCORE, CPUCT_denominator)
+import constants as c
+import logic
+
+
+commands = {c.KEY_UP: logic.up, c.KEY_DOWN: logic.down,
+                c.KEY_LEFT: logic.left, c.KEY_RIGHT: logic.right,
+                c.KEY_UP_ALT: logic.up, c.KEY_DOWN_ALT: logic.down,
+                c.KEY_LEFT_ALT: logic.left,
+                c.KEY_RIGHT_ALT: logic.right}
 
 class Node():
 
-    def __init__(self, state, father = None, action = None):
-        self.state = state
+    def __init__(self, matrix, father = None, action = None):
+        self.matrix = matrix 
+        self.is_over = False
+        if logic.game_state(self.matrix) == 'win':
+            self.is_win = True 
+            self.is_over = True
+        if logic.game_state(self.matrix) == 'lose':
+            self.is_win = False 
+            self.is_over = True
+        self.max_value = max(max(row) for row in self.matrix)
+        self.sum_value = sum(sum(np.array(self.matrix)))
+
         self.childs= []
         self.father = father 
         self.action= action 
@@ -19,6 +38,7 @@ class Node():
         self.U = 0
         self.P = 1/4
     
+
     def is_leaf(self):
         if len(self.childs) > 0:
             return False
@@ -27,6 +47,17 @@ class Node():
 
     def add_child(self, node):
         self.childs.append(node)
+
+    def act(self, event):
+        key = event
+        if key in commands:
+            new_matrix, done = commands[key](self.matrix)
+            if done:
+                new_matrix = logic.add_two(new_matrix)
+                # record last move
+                done = False
+        return new_matrix 
+
 
 
 class MCTS():
@@ -58,7 +89,7 @@ class MCTS():
                     (Nb) / (child.N)
                 U = child.U
                 Q = self.cpuct * child.Q 
-                if not(child.state.is_over) and not(child.is_dead):
+                if not(child.is_over) and not(child.is_dead):
                     if is_first:
                         maxQU = Q+U
                         simulation_child= child
@@ -76,17 +107,17 @@ class MCTS():
     def expand_leaf(self, currentNode):
 
         for i in range(4):
-            temp = copy.copy(currentNode.state) 
-            temp.action(KEY[i])
+            temp = currentNode.act(KEY[i])
+
             child = Node(temp, currentNode, action = KEY[i])
             child.N = 1
-            S_temp = (1-MAXVALUE_WEIGHT)*child.state.sum_value+\
-                    MAXVALUE_WEIGHT*child.state.max_value
+            S_temp = (1-MAXVALUE_WEIGHT)*child.sum_value+\
+                    MAXVALUE_WEIGHT*child.max_value
             child.S = S_temp / MAX_SCORE 
             child.Q = child.S # Revise: avoid the Q=0
             currentNode.add_child(child)
             self.add_to_tree(child)
-            if (child.state.matrix == currentNode.state.matrix)or(child.state.is_over):
+            if (child.matrix == currentNode.matrix)or(child.is_over):
                 child.is_dead = True
                 child.S = -child.S
         
@@ -107,11 +138,10 @@ class MCTS():
     def add_to_tree(self, node):
         self.tree.append(node)
 
-def mcts_process(gamegrid, tau = 1):
+def mcts_process(matrix, tau = 1):
     event = None
 
-    state = gamegrid
-    root_mct = Node(state)
+    root_mct = Node(matrix)
     mct = MCTS(root_mct, CPUCT)
 
     q = []
@@ -142,7 +172,7 @@ def mcts_process(gamegrid, tau = 1):
     if is_last:
         label["P"] = []
         for child in mct.root.childs:
-            if child.state.is_over:
+            if child.is_over:
                 p = np.power(child.S, 1/tau) 
             elif child.is_dead:
                 p = 0

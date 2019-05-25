@@ -7,7 +7,7 @@ def playing():
     gamegrid = puzzle.GameGrid()
     i=0
     while(1):
-        event= MCTS.mcts_process(gamegrid)
+        event= MCTS.mcts_process(gamegrid.matrix)
         gamegrid.action(event)
         print("step: ", i)
         i+=1
