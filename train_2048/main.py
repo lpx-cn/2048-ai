@@ -12,42 +12,46 @@ def data_merge(N,n):
     N["label"]["P"] += n["label"]["P"]
     N["label"]["S"] += n["label"]["S"]
 
+def play_one_time():
+    gamegrid = puzzle.GameGrid()
+    train_times = 0
+    NN_data = {}
+
+    model = obtain_model()
+
+    i=0
+    while(1):
+        i+=1
+        print("*"*25,"game_step: ", i, "*"*25)
+        NN_data_temp, event= MCTS.mcts_process(gamegrid.matrix, model)
+        if i == 1 :
+            NN_data = NN_data_temp
+        else:
+            data_merge(NN_data, NN_data_temp)
+        gamegrid.action(event)
+        for l in gamegrid.matrix:
+            print(l, event)
+        if gamegrid.is_over:
+            score_tem = gamegrid.max_value
+            break
+    return NN_data, score_tem 
+
 def training(training_times = TRAIN_TIMES):
     score = []
     if NETWORK_INIT: 
         train_init(POLICY_LOSS_WEIGHT)
 
     for game_times in range(training_times):
-        gamegrid = puzzle.GameGrid()
-        train_times = 0
-        NN_data = {}
 
-        model = obtain_model()
+        NN_data, score_tem = play_one_time()
 
-        i=0
-        while(1):
-            i+=1
-            print("*"*25,"game_step: ", i)
-            NN_data_temp, event= MCTS.mcts_process(gamegrid, model)
-            if i == 1 :
-                NN_data = NN_data_temp
-            else:
-                data_merge(NN_data, NN_data_temp)
-            gamegrid.action(event)
-            for l in gamegrid.matrix:
-                print(l, event)
-            if gamegrid.is_over:
-                score_tem = gamegrid.max_value
-                score.append(score_tem)
-                if score_tem >= max(score):
-                    train_times = int(score_tem/max(score))
-                else:
-                    train_times = 1/4
-                train_times = int(train_times * EPOCHs)
-                break
-        # if is_stable(score):
-            # print("The score can be %d" % max(score))
-            # break
+        score.append(score_tem)
+        if score_tem >= max(score):
+            train_times = int(score_tem/max(score))
+        else:
+            train_times = 1/4
+        train_times = int(train_times * EPOCHs)
+
         train_step(NN_data, train_times)
         print("the %dth game score is: %d" %(game_times, score_tem))
     print(score)
@@ -57,7 +61,7 @@ def playing(model):
     gamegrid = puzzle.GameGrid()
     i=0
     while(1):
-        NN_data_temp, event= MCTS.mcts_process(gamegrid, model)
+        NN_data_temp, event= MCTS.mcts_process(gamegrid.matrix, model)
         gamegrid.action(event)
         print("step: ", i)
         i+=1
