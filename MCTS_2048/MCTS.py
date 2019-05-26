@@ -58,8 +58,6 @@ class Node():
                 done = False
         return new_matrix 
 
-
-
 class MCTS():
 
     def __init__(self, root, cpuct = CPUCT):
@@ -121,7 +119,6 @@ class MCTS():
                 child.is_dead = True
                 child.S = -child.S
         
-
     def back_fill(self, currentNode):
         while currentNode != None :
             
@@ -144,16 +141,15 @@ def mcts_process(matrix, tau = 1):
     root_mct = Node(matrix)
     mct = MCTS(root_mct, CPUCT)
 
-    q = []
-    u = []
-    p = []
-    deltaQ = []
-    deltaU = []
-    N_prior = []
+    # q = []
+    # u = []
+    # p = []
 
     for i in range(UPDATE_TIMES):
         mct.cpuct = mct.root.N/CPUCT_denominator
         is_update = mct.update_tree()
+        if not(is_update):
+            break
     
 
     label = {}

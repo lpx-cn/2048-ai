@@ -33,14 +33,13 @@ def MTCS_player():
     import MCTS 
 
     value= []
-    for i in range(2):
+    for i in range(10):
         gamegrid = GameGrid()
         while(gamegrid.is_over == False):
             # time.sleep(1)
             event = MCTS.mcts_process(gamegrid.matrix)
             gamegrid.action(event)
             gamegrid.update_grid_cells()
-            print(gamegrid.matrix)
         print("%dth step's max value is %d" %(i, gamegrid.max_value))
         value.append(gamegrid.max_value)
 
