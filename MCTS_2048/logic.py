@@ -6,6 +6,7 @@
 # Note that written answers are commented out to allow us to run your
 # code easily while grading your problem set.
 import random
+from constants import MAX_SCORE
 
 #######
 #Task 1a#
@@ -59,7 +60,7 @@ def add_two(mat):
 def game_state(mat):
     for i in range(len(mat)):
         for j in range(len(mat[0])):
-            if mat[i][j] == 65536:
+            if mat[i][j] == MAX_SCORE:
                 return 'win'
     for i in range(len(mat)-1):
         # intentionally reduced to check the row on the right and below
