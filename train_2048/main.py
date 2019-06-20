@@ -47,9 +47,9 @@ def training(training_times = TRAIN_TIMES):
 
         score.append(score_tem)
         if score_tem >= max(score):
-            train_times = int(score_tem/max(score))
+            train_times = int(score_tem**2/max(score))
         else:
-            train_times = 1/4
+            train_times = 0 
         train_times = int(train_times * EPOCHs)
 
         train_step(NN_data, train_times)

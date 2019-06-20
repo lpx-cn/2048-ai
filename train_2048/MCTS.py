@@ -4,7 +4,7 @@ import constants
 from Resnet_funs import prediction 
 import copy
 from constants import (UPDATE_TIMES, EPSILON, KEY, 
-        ALPHA, CPUCT,MAXVALUE_WEIGHT, MAX_SCORE, CPUCT_denominator)
+        ALPHA, CPUCT, MAX_SCORE)
 import constants as c
 import logic
 
@@ -17,7 +17,6 @@ commands = {c.KEY_UP: logic.up, c.KEY_DOWN: logic.down,
 
 class Node():
 
-
     def __init__(self, matrix, father = None, prior = 1, action = None):
         self.matrix = matrix 
         self.is_over = False
@@ -27,19 +26,21 @@ class Node():
         if logic.game_state(self.matrix) == 'lose':
             self.is_win = False 
             self.is_over = True
-        self.max_value = max(max(row) for row in self.matrix)
-        self.sum_value = sum(sum(np.array(self.matrix)))
+
+        self.square_sum = np.sum(np.array(self.matrix)**2)
+        sum_value = sum(sum(np.array(self.matrix)))
+        self.sum_square = sum_value ** 2
 
         self.childs= []
         self.father = father 
         self.action= action 
         self.is_dead = False
         self.N = 0
-        self.S = 0
+        self.S = self.square_sum / self.sum_square
         self.Q = 0
         self.U = 0
         self.P = prior
-    
+
     def is_leaf(self):
         if len(self.childs) > 0:
             return False
@@ -84,8 +85,7 @@ class MCTS():
 
             is_first = True
             for idx, child in enumerate(currentNode.childs):
-                # Important!
-                child.U =  ((1-epsilon) * child.P + epsilon * nu[idx] )  * \
+                child.U = ((1-epsilon)*1/4  + epsilon * nu[idx] )  * \
                     (Nb) / (child.N)
                 U = child.U
                 Q = self.cpuct * child.Q 
@@ -98,12 +98,10 @@ class MCTS():
                         maxQU = Q + U
                         simulation_child = child 
             currentNode = simulation_child
-
             if currentNode == None:
                 return False
         self.expand_leaf(currentNode,model)
         self.back_fill(currentNode)
-
         return True
 
     def expand_leaf(self, currentNode, model):
@@ -111,31 +109,24 @@ class MCTS():
 
         for i in range(4):
             temp = currentNode.act(KEY[i])
+
             child = Node(temp, currentNode, p[0][i], action = KEY[i])
             child.N = 1
-            S_temp = (1-MAXVALUE_WEIGHT)*child.sum_value+\
-                    MAXVALUE_WEIGHT*child.max_value
-            child.S = S_temp / MAX_SCORE 
-            child.Q = child.S # Revise: avoid the Q=0
-            currentNode.add_child(child)
-            self.add_to_tree(child)
- 
-            # Important: over==lose
             if (child.matrix == currentNode.matrix)or(child.is_over):
                 child.is_dead = True
                 child.S = -child.S
-               
-
+            child.Q = child.S # Revise: avoid the Q=0
+            currentNode.add_child(child)
+            self.add_to_tree(child)
+        
     def back_fill(self, currentNode):
+        sum_scorce = 0
+        for child in currentNode.childs:
+            sum_scorce += child.S
+
         while currentNode != None :
-            
-            sum_scorce = 0
-            sum_N = 0
-            for child in currentNode.childs:
-                sum_N += child.N
-                sum_scorce += child.S
-            currentNode.N = sum_N
-            currentNode.S = sum_scorce 
+            currentNode.N += 4
+            currentNode.S += sum_scorce 
             currentNode.Q = currentNode.S / currentNode.N
             currentNode = currentNode.father
 
@@ -150,17 +141,15 @@ def mcts_process(matrix, model, tau=1):
     mct = MCTS(root_mct, CPUCT)
 
     for i in range(UPDATE_TIMES):
-        mct.cpuct = mct.root.N/CPUCT_denominator
-        is_update= mct.update_tree(model)
+        is_update = mct.update_tree(model)
         if not(is_update):
             break
+    
 
     feature = mct.root.matrix
     label = {}
     label["P"] = []
     label["S"] = [mct.root.Q]
-
-
 
     # If the gamegrid come to last step, all childs' N is 1.
     # the status is "is_over" or "is_dead".
@@ -173,22 +162,23 @@ def mcts_process(matrix, model, tau=1):
         label["P"] = []
         for child in mct.root.childs:
             if child.is_over:
-                p = np.power(child.S, 1/tau) 
+                p = 1
             elif child.is_dead:
                 p = 0
             else:
                 raise Exception("It's not last step, logic is wrong!")
             label["P"].append(p)
-        label["P"]=[label["P"]/sum(label["P"])]
+        label["P"]=np.array(label["P"])/sum(label["P"])
+        print("***********", label["P"])
     else:
         for child in mct.root.childs:
             p = np.power(child.N, 1/tau) 
             label["P"].append(p)
-        label["P"]=[label["P"]/sum(label["P"])]
+        print(label["P"])
+        label["P"]=np.array(label["P"])/sum(label["P"])
 
     NN_data["feature"] = [feature] 
     NN_data["label"] = label
-
     event = np.argmax(label["P"])
     event = KEY[event]
     if event==None:
