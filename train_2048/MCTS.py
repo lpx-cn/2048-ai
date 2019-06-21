@@ -168,14 +168,14 @@ def mcts_process(matrix, model, tau=1):
             else:
                 raise Exception("It's not last step, logic is wrong!")
             label["P"].append(p)
-        label["P"]=np.array(label["P"])/sum(label["P"])
+        label["P"]=[np.array(label["P"])/sum(label["P"])]
         print("***********", label["P"])
     else:
         for child in mct.root.childs:
             p = np.power(child.N, 1/tau) 
             label["P"].append(p)
         print(label["P"])
-        label["P"]=np.array(label["P"])/sum(label["P"])
+        label["P"]=[np.array(label["P"])/sum(label["P"])]
 
     NN_data["feature"] = [feature] 
     NN_data["label"] = label
