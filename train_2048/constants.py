@@ -3,12 +3,12 @@ TRAIN_TIMES = 10 # The game times for training the NN.
 PLAY_TIMES =  0 # The game times for testing the NN.
 POLICY_LOSS_WEIGHT = 1 # The weight of policy output for NN, which of score is 1. old =2048/7.3 
 EPOCHs = 1 # Times for every training (the score as its weight)
-NETWORK_INIT = True # Decide if a train model init is needed.
+NETWORK_INIT = False # Decide if a train model init is needed.
 KEY= ["'w'", "'s'", "'a'", "'d'"] # The action 
 
 
 # Parameters in MCTS.py
-CPUCT = 8 # The Q's weight. Q+U=CPUCT*score/child.N+SUM(N)/N
+CPUCT = 11 # The Q's weight. Q+U=CPUCT*score/child.N+SUM(N)/N
 UPDATE_TIMES = 4096 # Expand * times before deciding the action
 MAX_SCORE = 65536# The target score used for normalization
 EPSILON = 0.2  # The pretection's unbelievable probability
