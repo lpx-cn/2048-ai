@@ -4,7 +4,7 @@
 datestr=$(date +%Y%m%d%H%M)
 mkdir -p ./test_output/$datestr
 cp ./constants.py ./test_output/$datestr/
-cp ./Model_Resnet/ .test_output/$datestr/
+cp -r ./Model_Resnet/ .test_output/$datestr/
 
 # Write the comment file.
 echo -n "Please input the comment:"
