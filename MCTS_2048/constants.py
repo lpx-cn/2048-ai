@@ -4,7 +4,7 @@ KEY= ["'w'", "'s'", "'a'", "'d'"] # The action
 
 
 # Parameters in MCTS.py
-CPUCT = 8 # The Q's weight. Q+U=CPUCT*sum_score/child.N+SUM(N)/N
+CPUCT = 11 # The Q's weight. Q+U=CPUCT*sum_score/child.N+SUM(N)/N
 UPDATE_TIMES = 4096 # Expand * times before deciding the action
 MAX_SCORE = 65536 # The target score used for normalization
 EPSILON = 0.1  # The pretection's unbelievable probability

@@ -141,7 +141,11 @@ def mcts_process(matrix, tau = 1):
     # p = []
 
     for i in range(UPDATE_TIMES):
+        # mct.cpuct = i*CPUCT / UPDATE_TIMES
         is_update = mct.update_tree()
+        # print("*"*25,"step:",i)
+        # for child in mct.root.childs:
+            # print("U:", child.U, "Q:",child.Q*mct.cpuct)
         if not(is_update):
             break
     
