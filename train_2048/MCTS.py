@@ -85,7 +85,7 @@ class MCTS():
 
             is_first = True
             for idx, child in enumerate(currentNode.childs):
-                child.U = ((1-epsilon)*1/4  + epsilon * nu[idx] )  * \
+                child.U = ((1-epsilon)*child.P + epsilon * nu[idx] )  * \
                     (Nb) / (child.N)
                 U = child.U
                 Q = self.cpuct * child.Q 
