@@ -24,11 +24,11 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import np_utils
 from keras.callbacks import ReduceLROnPlateau, CSVLogger, EarlyStopping,TensorBoard, ModelCheckpoint
 
-# import tensorflow as tf                                                                                       
-# from keras.backend.tensorflow_backend import set_session
-# config = tf.ConfigProto()
-# config.gpu_options.per_process_gpu_memory_fraction = 0.8
-# set_session(tf.Session(config=config))
+import tensorflow as tf                                                                                       
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.5
+set_session(tf.Session(config=config))
 
 import resnet
 from constants import MODEL_PATH 
