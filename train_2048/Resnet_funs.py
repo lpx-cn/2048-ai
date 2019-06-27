@@ -27,7 +27,7 @@ from keras.callbacks import ReduceLROnPlateau, CSVLogger, EarlyStopping,TensorBo
 import tensorflow as tf                                                                                       
 from keras.backend.tensorflow_backend import set_session
 config = tf.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.5
+config.gpu_options.per_process_gpu_memory_fraction = 0.8
 set_session(tf.Session(config=config))
 
 import resnet
@@ -51,7 +51,7 @@ def train_init(p_weight = 1):
     img_rows, img_cols, img_channels= [4,4,1] 
 
     # create a resnet network
-    model = resnet.ResnetBuilder.build_resnet_4((img_rows, img_cols, img_channels),(4,1))
+    model = resnet.ResnetBuilder.build_resnet_18((img_rows, img_cols, img_channels),(4,1))
 
     # compile and plot the network 
     model.compile(loss = ['categorical_crossentropy' ,'mse'],
@@ -80,7 +80,7 @@ def train_step(data, epochs):
     S_output = np.array(S_output)
     
     Y_train = [P_output, S_output]
-    print(P_output)
+    # print(P_output)
 
     ############################### network parameters ###################################
     batch_size = 32 
