@@ -218,7 +218,7 @@ class ResnetBuilder(object):
         block = _bn_relu(block)
 
         # policy block (P)
-        convp1 = _conv_bn_relu(filters=2, kernel_size=(1, 1), strides=(1, 1))(block)
+        convp1 = _conv_bn_relu(filters=4, kernel_size=(1, 1), strides=(1, 1))(block)
         flatten0 = Flatten()(convp1)
         dense_p1= Dense(units = 32, activation = "relu")(flatten0)
         policy_output = Dense(units = num_outputs[0], kernel_initializer = "he_normal",
