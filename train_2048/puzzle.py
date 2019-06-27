@@ -11,6 +11,7 @@ class GameGrid():
         self.is_over = False
         self.max_value = 2
         self.sum_value = 4
+        self.sum_square = 16
         self.is_win = False
         self.step = 0
 
@@ -43,6 +44,7 @@ class GameGrid():
         self.step =self.step+1
         self.max_value = max(max(row) for row in self.matrix)
         self.sum_value = sum(sum(np.array(self.matrix)))
+        self.sum_square = np.sum(np.array(self.matrix)**2)
         return self 
 
     def init_matrix(self):
