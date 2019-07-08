@@ -130,17 +130,17 @@ class MCTS():
     def add_to_tree(self, node):
         self.tree.append(node)
 
-def mcts_process(matrix, tau = 1):
+def mcts_process(matrix, cpuct = CPUCT, update_times = UPDATE_TIMES, tau = 1):
     event = None
 
     root_mct = Node(matrix)
-    mct = MCTS(root_mct, CPUCT)
+    mct = MCTS(root_mct, cpuct)
 
     # q = []
     # u = []
     # p = []
 
-    for i in range(UPDATE_TIMES):
+    for i in range(update_times):
         # mct.cpuct = i*CPUCT / UPDATE_TIMES
         is_update = mct.update_tree()
         # print("*"*25,"step:",i)
@@ -174,12 +174,12 @@ def mcts_process(matrix, tau = 1):
                 raise Exception("It's not last step, logic is wrong!")
             label["P"].append(p)
         label["P"]=np.array(label["P"])/sum(label["P"])
-        print("***********", label["P"])
+        # print("***********", label["P"])
     else:
         for child in mct.root.childs:
             p = np.power(child.N, 1/tau) 
             label["P"].append(p)
-        print(label["P"])
+        # print(label["P"])
         label["P"]=np.array(label["P"])/sum(label["P"])
 
     event = np.argmax(label["P"])
