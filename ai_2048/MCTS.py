@@ -3,7 +3,7 @@ import numpy as np
 import constants 
 import copy
 from constants import (UPDATE_TIMES, EPSILON, KEY, 
-        ALPHA, CPUCT,MAXVALUE_WEIGHT, MAX_SCORE, CPUCT_denominator)
+        ALPHA, CPUCT, MAX_SCORE)
 import constants as c
 import logic
 
@@ -25,19 +25,19 @@ class Node():
         if logic.game_state(self.matrix) == 'lose':
             self.is_win = False 
             self.is_over = True
-        self.max_value = max(max(row) for row in self.matrix)
-        self.sum_value = sum(sum(np.array(self.matrix)))
+
+        self.square_sum = np.sum(np.array(self.matrix)**2)
+        sum_value = sum(sum(np.array(self.matrix)))
+        self.sum_square = sum_value ** 2
 
         self.childs= []
         self.father = father 
         self.action= action 
         self.is_dead = False
         self.N = 0
-        self.S = 0
+        self.S = self.square_sum / self.sum_square
         self.Q = 0
         self.U = 0
-        self.P = 1/4
-    
 
     def is_leaf(self):
         if len(self.childs) > 0:
@@ -109,26 +109,21 @@ class MCTS():
 
             child = Node(temp, currentNode, action = KEY[i])
             child.N = 1
-            S_temp = (1-MAXVALUE_WEIGHT)*child.sum_value+\
-                    MAXVALUE_WEIGHT*child.max_value
-            child.S = S_temp / MAX_SCORE 
-            child.Q = child.S # Revise: avoid the Q=0
-            currentNode.add_child(child)
-            self.add_to_tree(child)
             if (child.matrix == currentNode.matrix)or(child.is_over):
                 child.is_dead = True
                 child.S = -child.S
+            child.Q = child.S # Revise: avoid the Q=0
+            currentNode.add_child(child)
+            self.add_to_tree(child)
         
     def back_fill(self, currentNode):
+        sum_scorce = 0
+        for child in currentNode.childs:
+            sum_scorce += child.S
+
         while currentNode != None :
-            
-            sum_scorce = 0
-            sum_N = 0
-            for child in currentNode.childs:
-                sum_N += child.N
-                sum_scorce += child.S
-            currentNode.N = sum_N
-            currentNode.S = sum_scorce 
+            currentNode.N += 4
+            currentNode.S += sum_scorce 
             currentNode.Q = currentNode.S / currentNode.N
             currentNode = currentNode.father
 
@@ -146,7 +141,7 @@ def mcts_process(matrix, tau = 1):
     # p = []
 
     for i in range(UPDATE_TIMES):
-        mct.cpuct = mct.root.N/CPUCT_denominator
+        mct.cpuct = i*CPUCT / UPDATE_TIMES
         is_update = mct.update_tree()
         if not(is_update):
             break
@@ -169,18 +164,20 @@ def mcts_process(matrix, tau = 1):
         label["P"] = []
         for child in mct.root.childs:
             if child.is_over:
-                p = np.power(child.S, 1/tau) 
+                p = 1
             elif child.is_dead:
                 p = 0
             else:
                 raise Exception("It's not last step, logic is wrong!")
             label["P"].append(p)
-        label["P"]=[label["P"]/sum(label["P"])]
+        label["P"]=np.array(label["P"])/sum(label["P"])
+        print("***********", label["P"])
     else:
         for child in mct.root.childs:
             p = np.power(child.N, 1/tau) 
             label["P"].append(p)
-        label["P"]=[label["P"]/sum(label["P"])]
+        print(label["P"])
+        label["P"]=np.array(label["P"])/sum(label["P"])
 
     event = np.argmax(label["P"])
     event = KEY[event]
